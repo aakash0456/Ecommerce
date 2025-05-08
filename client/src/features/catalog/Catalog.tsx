@@ -13,16 +13,16 @@ export default function Catalog() {
   const productParams = useAppSelector(state => state.catalog);
 
   const { data, isLoading } = useFetchProductsQuery(productParams);
-  const {data: filersData, isLoading : filtersLoading} = useFetchFiltersQuery();
+  const {data: filtersData, isLoading : filtersLoading} = useFetchFiltersQuery();
   const dispatch = useAppDispatch();
 
-  if (isLoading || !data || !filtersLoading || !filersData) return <div>Loading...</div>
+  if (isLoading || !data || filtersLoading || !filtersData) return <div>Loading...</div>
 
   return (
     <Grid2 container spacing={4}>
       <Grid2 size={3}>
 
-        <Filters filtersData={filersData}></Filters>
+        <Filters filtersData={filtersData}></Filters>
       </Grid2>
       <Grid2 size={9}>
         {data.items && data.items.length > 0 ? (

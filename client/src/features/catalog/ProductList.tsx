@@ -7,15 +7,14 @@ type Props = {
 }
 
 
-export default function ProductList({products} : Props) {
+export default function ProductList({ products }: Props) {
   return (
     <Grid2 container spacing={3}>
-    {products.map(product => (
-      <Grid2 size = {3} display='flex'>
-         <ProductCard key = {product.id}product = {product}></ProductCard>
-      </Grid2>
-     
-    ))}
-  </Grid2>
-  )
+      {products.map(product => (
+        <Grid2 key={product.id} size={3} display='flex'>
+          <ProductCard product={product} />
+        </Grid2>
+      ))}
+    </Grid2>
+  );
 }
