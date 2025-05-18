@@ -9,24 +9,19 @@ export const catalogApi = createApi({
     reducerPath: 'catalogApi',
     baseQuery: baseQueryWithErrorHandling,
     endpoints: (builder) => ({
-        fetchProducts: builder.query<{ items: Product[], pagination: Pagination }, ProductParams>({
+        fetchProducts: builder.query<{items: Product[], pagination: Pagination}, ProductParams>({
             query: (productParams) => {
-
                 return {
                     url: 'products',
                     params: filterEmptyValues(productParams)
                 }
-
             },
-
-            transformResponse: (items: Product[], meta) =>{
+            transformResponse: (items: Product[], meta) => {
                 const paginationHeader = meta?.response?.headers.get('Pagination');
                 const pagination = paginationHeader ? JSON.parse(paginationHeader) : null;
                 return {items, pagination}
             }
-
         }),
-
         fetchProductDetails: builder.query<Product, number>({
             query: (productId) => `products/${productId}`
         }),
@@ -36,4 +31,5 @@ export const catalogApi = createApi({
     })
 });
 
-export const { useFetchProductDetailsQuery, useFetchProductsQuery, useFetchFiltersQuery } = catalogApi;
+export const { useFetchProductDetailsQuery, useLazyFetchProductsQuery, useLazyFetchFiltersQuery } 
+    = catalogApi;

@@ -1,7 +1,6 @@
 export type Pagination = {
-    currentPage : number;
+    currentPage: number;
     totalPages: number;
-    pageSize : number;
+    pageSize: number;
     totalCount: number;
-
 }

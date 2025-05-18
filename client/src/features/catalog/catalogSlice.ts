@@ -1,46 +1,47 @@
-import { createSlice } from "@reduxjs/toolkit/react";
+import { createSlice } from "@reduxjs/toolkit";
 import { ProductParams } from "../../app/models/productParams";
 
 const initialState: ProductParams = {
-    pageNumber : 1,
-    pageSize : 8,
+    pageNumber: 1,
+    pageSize: 8,
     types: [],
     brands: [],
     searchTerm: '',
-    orderby: 'name'
+    orderBy: 'name'
 }
+
 export const catalogSlice = createSlice({
-    name : 'catalogSlice',
+    name: 'catalogSlice',
     initialState,
-    reducers:{
-        setPageNumber(state, action){
+    reducers: {
+        setPageNumber(state, action) {
             state.pageNumber = action.payload
         },
-        setpageSize(state, action){
+        setPageSize(state, action) {
             state.pageSize = action.payload
         },
-        setOrderBy(state, action){
-            state.orderby = action.payload
-            state.pageNumber =1;
+        setOrderBy(state, action) {
+            state.orderBy = action.payload
+            state.pageNumber = 1;
         },
-        setTypes(state, action){
+        setTypes(state, action) {
             state.types = action.payload
-            state.pageNumber =1;
+            state.pageNumber = 1;
         },
-        setBrands(state, action){
+        setBrands(state, action) {
             state.brands = action.payload
-            state.pageNumber =1;
+            state.pageNumber = 1;
         },
-        setSearchTerm(state, action){
+        setSearchTerm(state, action) {
             state.searchTerm = action.payload
-            state.pageNumber =1;
+            state.pageNumber = 1;
         },
-
-        resetParams(){
+        resetParams() {
             return initialState;
         }
     }
 });
 
-
-export const{setBrands, setOrderBy, setPageNumber, setSearchTerm, setpageSize, setTypes, resetParams} = catalogSlice.actions;
+export const {setBrands, setOrderBy, setPageNumber, setPageSize, 
+    setSearchTerm, setTypes, resetParams} 
+    = catalogSlice.actions;

@@ -1,13 +1,12 @@
-import { Person, History, Logout } from "@mui/icons-material";
-import { Button, Divider, Fade, ListItemIcon, ListItemText, Menu, MenuItem } from "@mui/material";
+import { Button, Menu, Fade, MenuItem, ListItemIcon, ListItemText, Divider } from "@mui/material";
 import { useState } from "react";
 import { User } from "../models/user";
+import { History, Logout, Person } from "@mui/icons-material";
 import { useLogoutMutation } from "../../features/account/accountApi";
 
 type Props = {
     user: User
 }
-
 
 export default function UserMenu({ user }: Props) {
     const [logout] = useLogoutMutation();
@@ -23,10 +22,9 @@ export default function UserMenu({ user }: Props) {
     return (
         <div>
             <Button
-
                 onClick={handleClick}
-                color = 'inherit'
-                size = 'large'
+                color='inherit'
+                size='large'
                 sx={{fontSize: '1.1rem'}}
             >
                 {user.email}
@@ -41,21 +39,21 @@ export default function UserMenu({ user }: Props) {
                 onClose={handleClose}
                 TransitionComponent={Fade}
             >
-                <MenuItem >
+                <MenuItem>
                     <ListItemIcon>
-                        <Person></Person>
+                        <Person />
                     </ListItemIcon>
-                    <ListItemText>My Profile</ListItemText>
+                    <ListItemText>My profile</ListItemText>
                 </MenuItem>
-                <MenuItem >
+                <MenuItem>
                     <ListItemIcon>
                         <History />
                     </ListItemIcon>
-                    <ListItemText>My Orders</ListItemText>
+                    <ListItemText>My orders</ListItemText>
                 </MenuItem>
-                <Divider></Divider>
-                <MenuItem onClick={() => logout()}>
-                <ListItemIcon>
+                <Divider />
+                <MenuItem onClick={logout}>
+                    <ListItemIcon>
                         <Logout />
                     </ListItemIcon>
                     <ListItemText>Logout</ListItemText>
