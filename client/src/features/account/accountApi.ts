@@ -1,9 +1,10 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { baseQueryWithErrorHandling } from "../../app/api/baseApi";
 import { Address, User } from "../../app/models/user";
-import { LoginSchema } from "../../lib/schemas/loginSchema";
+
 import { router } from "../../app/routes/Routes";
 import { toast } from "react-toastify";
+import { LoginSchema } from "../../lib/schemas/loginSchema";
 
 export const accountApi = createApi({
     reducerPath: 'accountApi',
@@ -18,7 +19,7 @@ export const accountApi = createApi({
                     body: creds
                 }
             },
-            async onQueryStarted(_, {dispatch, queryFulfilled}) {
+            async onQueryStarted(_, { dispatch, queryFulfilled }) {
                 try {
                     await queryFulfilled;
                     dispatch(accountApi.util.invalidateTags(['UserInfo']))
@@ -35,7 +36,7 @@ export const accountApi = createApi({
                     body: creds
                 }
             },
-            async onQueryStarted(_, {queryFulfilled}) {
+            async onQueryStarted(_, { queryFulfilled }) {
                 try {
                     await queryFulfilled;
                     toast.success('Registration successful - you can now sign in!');
@@ -55,7 +56,7 @@ export const accountApi = createApi({
                 url: 'account/logout',
                 method: 'POST'
             }),
-            async onQueryStarted(_, {dispatch, queryFulfilled}) {
+            async onQueryStarted(_, { dispatch, queryFulfilled }) {
                 await queryFulfilled;
                 dispatch(accountApi.util.invalidateTags(['UserInfo']));
                 router.navigate('/');
@@ -72,10 +73,10 @@ export const accountApi = createApi({
                 method: 'POST',
                 body: address
             }),
-            onQueryStarted: async (address, {dispatch, queryFulfilled}) => {
+            onQueryStarted: async (address, { dispatch, queryFulfilled }) => {
                 const patchResult = dispatch(
                     accountApi.util.updateQueryData('fetchAddress', undefined, (draft) => {
-                        Object.assign(draft, {...address})
+                        Object.assign(draft, { ...address })
                     })
                 );
 
@@ -90,6 +91,6 @@ export const accountApi = createApi({
     })
 });
 
-export const {useLoginMutation, useRegisterMutation, useLogoutMutation, 
-    useUserInfoQuery, useLazyUserInfoQuery, useFetchAddressQuery, 
-    useUpdateUserAddressMutation} = accountApi;
+export const { useLoginMutation, useRegisterMutation, useLogoutMutation,
+    useUserInfoQuery, useLazyUserInfoQuery, useFetchAddressQuery,
+    useUpdateUserAddressMutation } = accountApi;

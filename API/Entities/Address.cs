@@ -26,5 +26,5 @@ namespace API.Entities;
         public required string PostalCode { get; set; }
 
        
-        public required string Country { get; set; }
+        public  string? Country { get; set; }
     }
