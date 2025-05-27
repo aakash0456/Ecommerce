@@ -1,5 +1,4 @@
-
-using API.Controllers;
+using System;
 using API.DTOs;
 using API.Entities;
 using Microsoft.AspNetCore.Authorization;
@@ -7,48 +6,57 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
+namespace API.Controllers;
+
 public class AccountController(SignInManager<User> signInManager) : BaseApiController
 {
     [HttpPost("register")]
-
     public async Task<ActionResult> RegisterUser(RegisterDto registerDto)
     {
-
         var user = new User{UserName = registerDto.Email, Email = registerDto.Email};
+
         var result = await signInManager.UserManager.CreateAsync(user, registerDto.Password);
-        if (!result.Succeeded) 
+
+        if (!result.Succeeded)
         {
-            foreach (var error in result.Errors) 
+            foreach (var error in result.Errors)
             {
-                ModelState.AddModelError("errors", error.Description);
+                ModelState.AddModelError(error.Code, error.Description);
             }
+
             return ValidationProblem();
         }
 
         await signInManager.UserManager.AddToRoleAsync(user, "Member");
-await signInManager.SignInAsync(user, isPersistent: false); // ✅ This issues the cookie
-return Ok();
 
+        return Ok();
     }
-    
-   
+
     [HttpGet("user-info")]
     public async Task<ActionResult> GetUserInfo()
     {
-       if(User.Identity?.IsAuthenticated != true) return NoContent();
-       var user = await signInManager.UserManager.GetUserAsync(User);
-       if(user == null) return Unauthorized();
-       var roles = await signInManager.UserManager.GetRolesAsync(user);
-    
-         return Ok(new { user.Email, user.UserName, Roles = roles }); // ✅ cleaner response
+        if (User.Identity?.IsAuthenticated == false) return NoContent();
 
+        var user = await signInManager.UserManager.GetUserAsync(User);
+
+        if (user == null) return Unauthorized();
+
+        var roles = await signInManager.UserManager.GetRolesAsync(user);
+
+        return Ok(new 
+        {
+            user.Email,
+            user.UserName,
+            Roles = roles
+        });
     }
 
     [HttpPost("logout")]
     public async Task<ActionResult> Logout()
     {
         await signInManager.SignOutAsync();
-        return Ok(new {message = "Logout successful"});
+
+        return NoContent();
     }
 
     [Authorize]
@@ -58,15 +66,17 @@ return Ok();
         var user = await signInManager.UserManager.Users
             .Include(x => x.Address)
             .FirstOrDefaultAsync(x => x.UserName == User.Identity!.Name);
-        if (user == null) return Unauthorized(new {message = "User not found"});
+
+        if (user == null) return Unauthorized();
 
         user.Address = address;
 
         var result = await signInManager.UserManager.UpdateAsync(user);
-        if (!result.Succeeded) return BadRequest(new {message = "Failed to update address"});
-        return Ok(new {message = "Address updated successfully"});
-    }
 
+        if (!result.Succeeded) return BadRequest("Problem updating user address");
+
+        return Ok(user.Address);
+    }
 
     [Authorize]
     [HttpGet("address")]
@@ -78,8 +88,7 @@ return Ok();
             .FirstOrDefaultAsync();
 
         if (address == null) return NoContent();
+
         return address;
     }
-
-
 }

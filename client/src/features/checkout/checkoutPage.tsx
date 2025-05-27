@@ -8,15 +8,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { useCreatePaymentIntentMutation } from "./checkoutApi";
 import { useAppSelector } from "../../app/store/store";
 
-const stripeKey = import.meta.env.VITE_STRIPE_PK;
-
-if (!stripeKey) {
-  throw new Error("Stripe publishable key is missing from environment variables.");
-}
-
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PK);
-
-
 
 export default function CheckoutPage() {
   const { data: basket } = useFetchBasketQuery();

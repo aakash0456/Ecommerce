@@ -1,9 +1,8 @@
 using System;
 using API.Data;
 using API.DTOs;
-
+using API.Entities.OrderAggregate;
 using API.Extensions;
-using API.Extentions;
 using API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,7 +11,7 @@ using Stripe;
 
 namespace API.Controllers;
 
-public class PaymentsController(PaymentService paymentsService,
+public class PaymentsController(PaymentsService paymentsService,
     StoreContext context, IConfiguration config, ILogger<PaymentsController> logger)
         : BaseApiController
 {
@@ -41,93 +40,93 @@ public class PaymentsController(PaymentService paymentsService,
         return basket.ToDto();
     }
 
-    // [HttpPost("webhook")]
-    // public async Task<IActionResult> StripeWebhook()
-    // {
-    //     var json = await new StreamReader(Request.Body).ReadToEndAsync();
+    [HttpPost("webhook")]
+    public async Task<IActionResult> StripeWebhook()
+    {
+        var json = await new StreamReader(Request.Body).ReadToEndAsync();
 
-    //     try
-    //     {
-    //         var stripeEvent = ConstructStripeEvent(json);
+        try
+        {
+            var stripeEvent = ConstructStripeEvent(json);
 
-    //         if (stripeEvent.Data.Object is not PaymentIntent intent)
-    //         {
-    //             return BadRequest("Invalid event data");
-    //         }
+            if (stripeEvent.Data.Object is not PaymentIntent intent)
+            {
+                return BadRequest("Invalid event data");
+            }
 
-    //         if (intent.Status == "succeeded") await HandlePaymentIntentSucceeded(intent);
-    //         else await HandlePaymentIntentFailed(intent);
+            if (intent.Status == "succeeded") await HandlePaymentIntentSucceeded(intent);
+            else await HandlePaymentIntentFailed(intent);
 
-    //         return Ok();
-    //     }
-    //     catch (StripeException ex)
-    //     {
-    //         logger.LogError(ex, "Stripe webhook error");
-    //         return StatusCode(StatusCodes.Status500InternalServerError, "Webhook error");
-    //     }
-    //     catch (Exception ex)
-    //     {
-    //         logger.LogError(ex, "An expected error has occurred");
-    //         return StatusCode(StatusCodes.Status500InternalServerError, "Unexpected error");
-    //     }
-    // }
+            return Ok();
+        }
+        catch (StripeException ex)
+        {
+            logger.LogError(ex, "Stripe webhook error");
+            return StatusCode(StatusCodes.Status500InternalServerError, "Webhook error");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "An expected error has occurred");
+            return StatusCode(StatusCodes.Status500InternalServerError, "Unexpected error");
+        }
+    }
 
-    // private async Task HandlePaymentIntentFailed(PaymentIntent intent)
-    // {
-    //     var order = await context.Orders
-    //         .Include(x => x.OrderItems)
-    //         .FirstOrDefaultAsync(x => x.PaymentIntentId == intent.Id)
-    //             ?? throw new Exception("Order not found");
+    private async Task HandlePaymentIntentFailed(PaymentIntent intent)
+    {
+        var order = await context.Orders
+            .Include(x => x.OrderItems)
+            .FirstOrDefaultAsync(x => x.PaymentIntentId == intent.Id)
+                ?? throw new Exception("Order not found");
 
-    //     foreach (var item in order.OrderItems)
-    //     {
-    //         var productItem = await context.Products
-    //             .FindAsync(item.ItemOrdered.ProductId)
-    //                 ?? throw new Exception("Problem updating order stock");
+        foreach (var item in order.OrderItems)
+        {
+            var productItem = await context.Products
+                .FindAsync(item.ItemOrdered.ProductId)
+                    ?? throw new Exception("Problem updating order stock");
 
-    //         productItem.QuantityInStock += item.Quantity;
-    //     }
+            productItem.QuantityInStock += item.Quantity;
+        }
 
-    //     order.OrderStatus = OrderStatus.PaymentFailed;
+        order.OrderStatus = OrderStatus.PaymentFailed;
 
-    //     await context.SaveChangesAsync();
-    // }
+        await context.SaveChangesAsync();
+    }
 
-    // private async Task HandlePaymentIntentSucceeded(PaymentIntent intent)
-    // {
-    //     var order = await context.Orders
-    //        .Include(x => x.OrderItems)
-    //        .FirstOrDefaultAsync(x => x.PaymentIntentId == intent.Id)
-    //            ?? throw new Exception("Order not found");
+    private async Task HandlePaymentIntentSucceeded(PaymentIntent intent)
+    {
+        var order = await context.Orders
+           .Include(x => x.OrderItems)
+           .FirstOrDefaultAsync(x => x.PaymentIntentId == intent.Id)
+               ?? throw new Exception("Order not found");
 
-    //     if (order.GetTotal() != intent.Amount)
-    //     {
-    //         order.OrderStatus = OrderStatus.PaymentMismatch;
-    //     }
-    //     else
-    //     {
-    //         order.OrderStatus = OrderStatus.PaymentReceived;
-    //     }
+        if (order.GetTotal() != intent.Amount)
+        {
+            order.OrderStatus = OrderStatus.PaymentMismatch;
+        }
+        else
+        {
+            order.OrderStatus = OrderStatus.PaymentReceived;
+        }
 
-    //     var basket = await context.Baskets.FirstOrDefaultAsync(x => 
-    //         x.PaymentIntentId == intent.Id);
+        var basket = await context.Baskets.FirstOrDefaultAsync(x => 
+            x.PaymentIntentId == intent.Id);
             
-    //     if (basket != null) context.Baskets.Remove(basket);
+        if (basket != null) context.Baskets.Remove(basket);
 
-    //     await context.SaveChangesAsync();
-    // }
+        await context.SaveChangesAsync();
+    }
 
-    // private Event ConstructStripeEvent(string json)
-    // {
-    //     try
-    //     {
-    //         return EventUtility.ConstructEvent(json,
-    //             Request.Headers["Stripe-Signature"], config["StripeSettings:WhSecret"]);
-    //     }
-    //     catch (Exception ex)
-    //     {
-    //         logger.LogError(ex, "Failed to construct stripe event");
-    //         throw new StripeException("Invalid signature");
-    //     }
-    // }
+    private Event ConstructStripeEvent(string json)
+    {
+        try
+        {
+            return EventUtility.ConstructEvent(json,
+                Request.Headers["Stripe-Signature"], config["StripeSettings:WhSecret"]);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to construct stripe event");
+            throw new StripeException("Invalid signature");
+        }
+    }
 }

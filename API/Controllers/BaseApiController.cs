@@ -1,7 +1,4 @@
-
 using Microsoft.AspNetCore.Mvc;
-
-
 
 namespace API.Controllers
 {
@@ -9,6 +6,5 @@ namespace API.Controllers
     [ApiController]
     public class BaseApiController : ControllerBase
     {
-
     }
 }
